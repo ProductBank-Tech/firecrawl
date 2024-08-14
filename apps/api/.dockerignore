@@ -2,3 +2,34 @@
 /dist/
 .env
 *.csv
+# Exclude node modules (will be installed during build)
+node_modules
+
+# Exclude any local environment files
+.env
+.env.*
+
+# Exclude version control files
+.git
+.gitignore
+
+# Exclude test files
+__tests__
+*.test.js
+*.spec.js
+
+# Exclude development configs
+nodemon.json
+.eslintrc
+.prettierrc
+
+# Exclude documentation
+README.md
+CHANGELOG.md
+
+# Exclude any logs
+*.log
+
+# Exclude any temporary files or directories
+tmp
+temp
