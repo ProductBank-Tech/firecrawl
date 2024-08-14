@@ -13,14 +13,14 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y chromium chromium-sandbox && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Copy package.json and pnpm-lock.yaml (if you have one)
-COPY package.json pnpm-lock.yaml* ./
+# Copy the entire project
+COPY . .
+
+# Navigate to the api directory
+WORKDIR /app/apps/api
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
-
-# Copy the rest of the application
-COPY . .
 
 # Build the application
 RUN pnpm run build
