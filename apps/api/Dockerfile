@@ -3,7 +3,6 @@ FROM node:20-slim
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
-ENV PORT=8080
 
 RUN corepack enable
 
@@ -17,16 +16,16 @@ RUN apt-get update -qq && \
 # Copy the entire project
 COPY . .
 
+# Navigate to the api directory
+WORKDIR /app/apps/api
+
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
 # Build the application
 RUN pnpm run build
 
-# List the contents of the dist directory (for debugging)
-RUN ls -la dist/src
-
 EXPOSE 8080
 
 # Start the server
-CMD ["pnpm", "run", "start:production"]
+CMD ["node", "dist/index.js"]
