@@ -1,33 +1,31 @@
-FROM node:20-slim AS base
+FROM node:20-slim
+
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-LABEL fly_launch_runtime="Node.js"
+ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
+
 RUN corepack enable
-COPY . /app
+
 WORKDIR /app
 
-FROM base AS prod-deps
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
-
-FROM base AS build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-
-RUN pnpm install
-RUN pnpm run build
-
-# Install packages needed for deployment
-
-
-FROM base
+# Install necessary packages including Chromium
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y chromium chromium-sandbox && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
-COPY --from=prod-deps /app/node_modules /app/node_modules
-COPY --from=build /app /app
 
+# Copy package.json and pnpm-lock.yaml (if you have one)
+COPY package.json pnpm-lock.yaml* ./
 
+# Install dependencies
+RUN pnpm install --frozen-lockfile
 
+# Copy the rest of the application
+COPY . .
 
-# Start the server by default, this can be overwritten at runtime
+# Build the application
+RUN pnpm run build
+
 EXPOSE 8080
-ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
+
+# Start the server
+CMD ["node", "dist/index.js"]
