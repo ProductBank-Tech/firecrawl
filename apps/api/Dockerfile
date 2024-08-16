@@ -31,3 +31,4 @@ COPY --from=build /app /app
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 8080
 ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
+ENV RAILWAY_SERVICE_ID="8da9202d-e776-4437-835e-11228abecc57"
