@@ -6,24 +6,30 @@ LABEL fly_launch_runtime="Node.js"
 # Explicitly install pnpm
 RUN npm install -g pnpm
 
-COPY . /app
+# Copy package.json and pnpm-lock.yaml (if it exists) first
+COPY package.json pnpm-lock.yaml* /app/
 WORKDIR /app
 
-FROM base AS prod-deps
-# Install dependencies with error logging
+# Install dependencies
 RUN pnpm install --prod --frozen-lockfile || (echo "pnpm install failed" && cat /root/.pnpm-debug.log && exit 1)
 
+# Now copy the rest of the application
+COPY . .
+
+# Build stage
 FROM base AS build
-COPY --from=prod-deps /app/node_modules /app/node_modules
 RUN pnpm install --frozen-lockfile || (echo "pnpm install failed" && cat /root/.pnpm-debug.log && exit 1)
 RUN pnpm run build
 
+# Production stage
 FROM base
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y chromium chromium-sandbox && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
-COPY --from=prod-deps /app/node_modules /app/node_modules
-COPY --from=build /app /app
+
+# Copy built files and production dependencies
+COPY --from=build /app/dist /app/dist
+COPY --from=build /app/node_modules /app/node_modules
 
 EXPOSE 8080
 ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
