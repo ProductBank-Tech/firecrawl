@@ -6,28 +6,25 @@ LABEL fly_launch_runtime="Node.js"
 # Explicitly install pnpm
 RUN npm install -g pnpm
 
+WORKDIR /app
+
 # Debug: List contents of the root directory
 RUN echo "Contents of root directory:" && ls -la /
 
 # Debug: List contents of the current directory
 RUN echo "Contents of current directory:" && ls -la
 
-# Try to copy package.json and pnpm-lock.yaml (if it exists)
-COPY package.json pnpm-lock.yaml* ./
+# Copy package.json and pnpm-lock.yaml from the api directory
+COPY apps/api/package.json apps/api/pnpm-lock.yaml* ./
 
 # Debug: List contents after copy
 RUN echo "Contents after copy:" && ls -la
 
-WORKDIR /app
-
-# Debug: List contents of /app directory
-RUN echo "Contents of /app directory:" && ls -la /app
-
 # Install dependencies
 RUN pnpm install --prod --frozen-lockfile || (echo "pnpm install failed" && exit 1)
 
-# Now copy the rest of the application
-COPY . .
+# Now copy the rest of the api application
+COPY apps/api .
 
 # Debug: Final list of contents
 RUN echo "Final contents:" && ls -la
