@@ -7,16 +7,12 @@ COPY . /app
 WORKDIR /app
 
 FROM base AS prod-deps
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod --frozen-lockfile
 
 FROM base AS build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-
-RUN pnpm install
+COPY --from=prod-deps /app/node_modules /app/node_modules
+RUN pnpm install --frozen-lockfile
 RUN pnpm run build
-
-# Install packages needed for deployment
-
 
 FROM base
 RUN apt-get update -qq && \
@@ -25,10 +21,5 @@ RUN apt-get update -qq && \
 COPY --from=prod-deps /app/node_modules /app/node_modules
 COPY --from=build /app /app
 
-
-
-
-# Start the server by default, this can be overwritten at runtime
 EXPOSE 8080
 ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
-ENV RAILWAY_SERVICE_ID="8da9202d-e776-4437-835e-11228abecc57"
