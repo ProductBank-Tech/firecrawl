@@ -1,5 +1,3 @@
-/node_modules/
-/dist/
 .env
 *.csv
 # Exclude node modules (will be installed during build)
