@@ -48,4 +48,4 @@ EXPOSE 8080
 ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
 
 # Add a CMD instruction to specify how to run your application
-CMD ["sleep", "3", "&&", "pnpm", "start"]
+CMD ["/bin/sh", "-c", "sleep 3 && pnpm start"]
