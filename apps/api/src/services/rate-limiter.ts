@@ -1,7 +1,6 @@
 import { RateLimiterRedis } from "rate-limiter-flexible";
 import { RateLimiterMode } from "../../src/types";
 import Redis from "ioredis";
-import { processDocxToText } from "src/scraper/WebScraper/utils/docxProcessor";
 
 const RATE_LIMITS = {
   crawl: {
