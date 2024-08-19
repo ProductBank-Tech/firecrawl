@@ -67,7 +67,7 @@ const redisOptions = {
   }
 };
 
-const redisRateLimitClient = new Redis(redisOptions);
+export const redisRateLimitClient = new Redis(redisOptions);
 
 // export const redisRateLimitClient = new Redis(
 //   process.env.REDIS_RATE_LIMIT_URL  + '?family=0'
