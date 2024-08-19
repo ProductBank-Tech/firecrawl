@@ -21,6 +21,7 @@ export async function redisHealthController(req: Request, res: Response) {
       host: 'redis.railway.internal',
       port: 6379, // or whatever port Railway provides
       family: 0,
+      password: process.env.REDIS_PASSWORD,
       retryStrategy: (times) => {
         const delay = Math.min(times * 50, 2000);
         return delay;

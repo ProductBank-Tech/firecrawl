@@ -18,6 +18,7 @@ const { createBullBoard } = require("@bull-board/api");
 const { BullAdapter } = require("@bull-board/api/bullAdapter");
 const { ExpressAdapter } = require("@bull-board/express");
 
+
 const numCPUs = process.env.ENV === "local" ? 2 : os.cpus().length;
 Logger.info(`Number of CPUs: ${numCPUs} available`);
 
@@ -29,8 +30,8 @@ const cacheable = new CacheableLookup({
 cacheable.install(http.globalAgent);
 cacheable.install(https.globalAgent)
 
-if (cluster.isMaster) {
-  Logger.info(`Master ${process.pid} is running`);
+if (cluster.isPrimary) {  // Changed from isMaster to isPrimary
+  Logger.info(`Primary ${process.pid} is running`);
 
   // Fork workers.
   for (let i = 0; i < numCPUs; i++) {
@@ -38,12 +39,21 @@ if (cluster.isMaster) {
   }
 
   cluster.on("exit", (worker, code, signal) => {
-    if (code !== null) {
-      Logger.info(`Worker ${worker.process.pid} exited`);
-      Logger.info("Starting a new worker");
-      cluster.fork();
+    if (signal) {
+      Logger.info(`Worker ${worker.process.pid} was killed by signal: ${signal}`);
+    } else if (code !== 0) {
+      Logger.info(`Worker ${worker.process.pid} exited with error code: ${code}`);
+    } else {
+      Logger.info(`Worker ${worker.process.pid} exited successfully`);
     }
+    Logger.info("Starting a new worker");
+    cluster.fork();
   });
+
+  cluster.on("disconnect", (worker) => {
+    Logger.info(`The worker #${worker.id} has disconnected`);
+  });
+
 } else {
   const app = express();
 
@@ -96,12 +106,49 @@ if (cluster.isMaster) {
         `For the Queue UI, open: http://${HOST}:${port}/admin/${process.env.BULL_AUTH_KEY}/queues`
       );
     });
+
+    server.on('error', (error) => {
+      if (error.code === 'EADDRINUSE') {
+        Logger.error(`Port ${port} is already in use`);
+        setTimeout(() => {
+          server.close();
+          startServer(port);
+        }, 1000);
+      } else if (error.code === 'EPIPE') {
+        Logger.error('EPIPE error occurred. Restarting server...');
+        setTimeout(() => {
+          server.close();
+          startServer(port);
+        }, 1000);
+      } else {
+        Logger.error('Unexpected server error:', error);
+      }
+    });
+
+    process.on('uncaughtException', (error) => {
+      Logger.error('Uncaught Exception:', error);
+      // Gracefully shutdown
+      server.close(() => {
+        process.exit(1);
+      });
+    });
+
+    process.on('unhandledRejection', (reason, promise) => {
+      Logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+      // Gracefully shutdown
+      server.close(() => {
+        process.exit(1);
+      });
+    });
+
     return server;
   }
 
   if (require.main === module) {
     startServer();
   }
+
+  Logger.info(`Worker ${process.pid} started`);
 
   app.get(`/serverHealthCheck`, async (req, res) => {
     try {
