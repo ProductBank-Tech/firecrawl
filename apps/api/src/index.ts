@@ -100,8 +100,10 @@ if (cluster.isPrimary) {  // Changed from isMaster to isPrimary
   app.use(adminRouter);
   const DEFAULT_PORT = process.env.PORT ?? 3002;
   // const HOST = process.env.HOST ?? "localhost";
-  const PORT = process.env.PORT ?? 8080;
-  const HOST = "::";
+  // const PORT = process.env.PORT ?? 8080;
+  // const HOST = "::";
+  const HOST = "0.0.0.0";
+  const PORT = process.env.PORT || 3000;
 
   // HyperDX OpenTelemetry
   if (process.env.ENV === "production") {
