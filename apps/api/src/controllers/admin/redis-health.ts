@@ -18,9 +18,11 @@ export async function redisHealthController(req: Request, res: Response) {
 
   try {
     const redisOptions = {
-      host: process.env.REDIS_HOST || 'r.railway.internal',
+      // host: process.env.REDIS_HOST || 'r.railway.internal',
+      host: 'r.railway.internal',
       port: parseInt(process.env.REDIS_PORT || '6379'),
       family: 0,
+      username: process.env.REDIS_USERNAME || 'default',
       password: process.env.REDIS_PASSWORD,
       retryStrategy: (times) => {
         const delay = Math.min(times * 50, 2000);
