@@ -61,7 +61,6 @@ const RATE_LIMITS = {
 const redisOptions = {
   host: process.env.REDIS_HOST || 'redis.railway.internal',
   port: parseInt(process.env.REDIS_PORT || '6379'),
-  port: 6379, // or whatever port Railway provides
   family: 0,
   password: process.env.REDIS_PASSWORD,
   retryStrategy: (times) => {
