@@ -79,16 +79,17 @@ if (cluster.isMaster) {
   // register router
   app.use(v0Router);
   app.use(adminRouter);
-
   const DEFAULT_PORT = process.env.PORT ?? 3002;
-  const HOST = process.env.HOST ?? "localhost";
+  // const HOST = process.env.HOST ?? "localhost";
+  const PORT = process.env.PORT ?? 8080;
+  const HOST = "::";
 
   // HyperDX OpenTelemetry
   if (process.env.ENV === "production") {
     initSDK({ consoleCapture: true, additionalInstrumentations: [] });
   }
 
-  function startServer(port = DEFAULT_PORT) {
+  function startServer(port = PORT) {
     const server = app.listen(Number(port), HOST, () => {
       Logger.info(`Worker ${process.pid} listening on port ${port}`);
       Logger.info(
