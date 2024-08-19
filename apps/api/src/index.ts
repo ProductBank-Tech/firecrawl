@@ -12,23 +12,22 @@ import { adminRouter } from "./routes/admin";
 import { ScrapeEvents } from "./lib/scrape-events";
 import http from 'node:http';
 import https from 'node:https';
-import CacheableLookup  from 'cacheable-lookup';
+import CacheableLookup from 'cacheable-lookup';
 
 const { createBullBoard } = require("@bull-board/api");
 const { BullAdapter } = require("@bull-board/api/bullAdapter");
 const { ExpressAdapter } = require("@bull-board/express");
-
 
 const numCPUs = process.env.ENV === "local" ? 2 : os.cpus().length;
 Logger.info(`Number of CPUs: ${numCPUs} available`);
 
 const cacheable = new CacheableLookup({
   // this is important to avoid querying local hostnames see https://github.com/szmarczak/cacheable-lookup readme
-  lookup:false
+  lookup: false
 });
 
 cacheable.install(http.globalAgent);
-cacheable.install(https.globalAgent)
+cacheable.install(https.globalAgent);
 
 if (cluster.isPrimary) {  // Changed from isMaster to isPrimary
   Logger.info(`Primary ${process.pid} is running`);
@@ -107,7 +106,7 @@ if (cluster.isPrimary) {  // Changed from isMaster to isPrimary
       );
     });
 
-    server.on('error', (error) => {
+    server.on('error', (error: NodeJS.ErrnoException) => {
       if (error.code === 'EADDRINUSE') {
         Logger.error(`Port ${port} is already in use`);
         setTimeout(() => {
@@ -125,7 +124,7 @@ if (cluster.isPrimary) {  // Changed from isMaster to isPrimary
       }
     });
 
-    process.on('uncaughtException', (error) => {
+    process.on('uncaughtException', (error: Error) => {
       Logger.error('Uncaught Exception:', error);
       // Gracefully shutdown
       server.close(() => {
@@ -133,7 +132,7 @@ if (cluster.isPrimary) {  // Changed from isMaster to isPrimary
       });
     });
 
-    process.on('unhandledRejection', (reason, promise) => {
+    process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
       Logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
       // Gracefully shutdown
       server.close(() => {
@@ -164,7 +163,7 @@ if (cluster.isPrimary) {  // Changed from isMaster to isPrimary
       });
     } catch (error) {
       Logger.error(error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
@@ -199,22 +198,24 @@ if (cluster.isPrimary) {  // Changed from isMaster to isPrimary
                   } minute(s).`,
                 };
 
-                const response = await fetch(slackWebhookUrl, {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify(message),
-                });
+                if (slackWebhookUrl) {
+                  const response = await fetch(slackWebhookUrl, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(message),
+                  });
 
-                if (!response.ok) {
-                  Logger.error("Failed to send Slack notification");
+                  if (!response.ok) {
+                    Logger.error("Failed to send Slack notification");
+                  }
                 }
               }
             }, timeout);
           }
         } catch (error) {
-          Logger.debug(error);
+          Logger.debug(error instanceof Error ? error : 'Unknown error');
         }
       };
 
@@ -237,5 +238,3 @@ wsq.on("completed", j => ScrapeEvents.logJobEvent(j, "completed"));
 wsq.on("paused", j => ScrapeEvents.logJobEvent(j, "paused"));
 wsq.on("resumed", j => ScrapeEvents.logJobEvent(j, "resumed"));
 wsq.on("removed", j => ScrapeEvents.logJobEvent(j, "removed"));
-
-
