@@ -18,7 +18,7 @@ export async function redisHealthController(req: Request, res: Response) {
 
   try {
     const redisOptions = {
-      host: process.env.REDIS_HOST || 'redis.railway.internal',
+      host: process.env.REDIS_HOST || 'r.railway.internal',
       port: parseInt(process.env.REDIS_PORT || '6379'),
       family: 0,
       password: process.env.REDIS_PASSWORD,
@@ -27,7 +27,10 @@ export async function redisHealthController(req: Request, res: Response) {
         return delay;
       }
     };
-    
+    console.log('Attempting to connect to Redis...');
+    console.log(process.env.REDIS_URL);
+    console.log(process.env.REDIS_PORT);
+    console.log(process.env.REDIS_PASSWORD);
     const queueRedis = new Redis(redisOptions);
     console.log('Attempting to connect to Redis...');
     console.log('Redis URL:', process.env.REDIS_URL);

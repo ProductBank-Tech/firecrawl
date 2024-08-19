@@ -58,7 +58,7 @@ const RATE_LIMITS = {
 };
 
 const redisOptions = {
-  host: process.env.REDIS_HOST || 'redis.railway.internal',
+  host: process.env.REDIS_HOST || 'r.railway.internal',
   port: parseInt(process.env.REDIS_PORT || '6379'),
   family: 0,
   password: process.env.REDIS_PASSWORD,
@@ -67,6 +67,10 @@ const redisOptions = {
     return delay;
   }
 };
+console.log('Attempting to connect to Redis...');
+console.log(process.env.REDIS_URL);
+console.log(process.env.REDIS_PORT);
+console.log(process.env.REDIS_PASSWORD);
 
 export const redisRateLimitClient = new Redis(redisOptions);
 
