@@ -57,9 +57,21 @@ const RATE_LIMITS = {
   },
 };
 
-export const redisRateLimitClient = new Redis(
-  process.env.REDIS_RATE_LIMIT_URL  + '?family=0'
-)
+const redisOptions = {
+  host: 'redis.railway.internal',
+  port: 6379, // or whatever port Railway provides
+  family: 0,
+  retryStrategy: (times) => {
+    const delay = Math.min(times * 50, 2000);
+    return delay;
+  }
+};
+
+const redisRateLimitClient = new Redis(redisOptions);
+
+// export const redisRateLimitClient = new Redis(
+//   process.env.REDIS_RATE_LIMIT_URL  + '?family=0'
+// )
 
 const createRateLimiter = (keyPrefix, points) =>
   new RateLimiterRedis({
