@@ -13,6 +13,7 @@ import { ScrapeEvents } from "./lib/scrape-events";
 import http from 'node:http';
 import https from 'node:https';
 import CacheableLookup from 'cacheable-lookup';
+import { redisRateLimitClient } from "./services/rate-limiter";
 
 const { createBullBoard } = require("@bull-board/api");
 const { BullAdapter } = require("@bull-board/api/bullAdapter");
@@ -78,6 +79,15 @@ if (cluster.isPrimary) {  // Changed from isMaster to isPrimary
 
   app.get("/", (req, res) => {
     res.send("SCRAPERS-JS: Hello, world! Fly.io");
+  });
+
+  app.get('/health', async (req, res) => {
+    try {
+      await redisRateLimitClient.ping();
+      res.status(200).json({ status: 'healthy', redis: 'connected' });
+    } catch (error) {
+      res.status(500).json({ status: 'unhealthy', redis: 'disconnected' });
+    }
   });
 
   //write a simple test function

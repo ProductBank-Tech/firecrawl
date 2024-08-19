@@ -1,6 +1,7 @@
 import { RateLimiterRedis } from "rate-limiter-flexible";
 import { RateLimiterMode } from "../../src/types";
 import Redis from "ioredis";
+import { processDocxToText } from "src/scraper/WebScraper/utils/docxProcessor";
 
 const RATE_LIMITS = {
   crawl: {
@@ -58,7 +59,8 @@ const RATE_LIMITS = {
 };
 
 const redisOptions = {
-  host: 'redis.railway.internal',
+  host: process.env.REDIS_HOST || 'redis.railway.internal',
+  port: parseInt(process.env.REDIS_PORT || '6379'),
   port: 6379, // or whatever port Railway provides
   family: 0,
   password: process.env.REDIS_PASSWORD,
