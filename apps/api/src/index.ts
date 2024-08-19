@@ -120,20 +120,22 @@ if (cluster.isPrimary) {  // Changed from isMaster to isPrimary
           startServer(port);
         }, 1000);
       } else {
-        Logger.error('Unexpected server error:', error);
+        Logger.error(`Unexpected server error: ${error.message}`);
       }
     });
+    
+    
 
     process.on('uncaughtException', (error: Error) => {
-      Logger.error('Uncaught Exception:', error);
+      Logger.error(`Uncaught Exception: ${error.message}`);
       // Gracefully shutdown
       server.close(() => {
         process.exit(1);
       });
     });
 
-    process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
-      Logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    process.on('unhandledRejection', (reason: any) => {
+      Logger.error(`Unhandled Rejection: ${reason instanceof Error ? reason.message : String(reason)}`);
       // Gracefully shutdown
       server.close(() => {
         process.exit(1);
@@ -162,7 +164,7 @@ if (cluster.isPrimary) {  // Changed from isMaster to isPrimary
         waitingJobs,
       });
     } catch (error) {
-      Logger.error(error);
+      Logger.error(error instanceof Error ? error.message : 'Unknown error');
       return res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
@@ -215,7 +217,7 @@ if (cluster.isPrimary) {  // Changed from isMaster to isPrimary
             }, timeout);
           }
         } catch (error) {
-          Logger.debug(error instanceof Error ? error : 'Unknown error');
+          Logger.debug(error instanceof Error ? error.message : String(error));
         }
       };
 
