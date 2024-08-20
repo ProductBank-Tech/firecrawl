@@ -9,16 +9,16 @@ RUN npm install -g pnpm
 WORKDIR /app
 
 # Debug: List contents of the root directory
-RUN echo "Contents of root directory:" && ls -la /
+# RUN echo "Contents of root directory:" && ls -la /
 
 # Debug: List contents of the current directory
-RUN echo "Contents of current directory:" && ls -la
+# RUN echo "Contents of current directory:" && ls -la
 
 # Copy package.json and pnpm-lock.yaml from the api directory
 COPY apps/api/package.json apps/api/pnpm-lock.yaml* ./
 
 # Debug: List contents after copy
-RUN echo "Contents after copy:" && ls -la
+# RUN echo "Contents after copy:" && ls -la
 
 # Install dependencies
 RUN pnpm install --prod --frozen-lockfile || (echo "pnpm install failed" && exit 1)
@@ -27,7 +27,7 @@ RUN pnpm install --prod --frozen-lockfile || (echo "pnpm install failed" && exit
 COPY apps/api .
 
 # Debug: Final list of contents
-RUN echo "Final contents:" && ls -la
+# RUN echo "Final contents:" && ls -la
 
 # Build stage
 FROM base AS build
@@ -40,9 +40,9 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y chromium chromium-sandbox && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Copy built files and production dependencies
-COPY --from=build /app/dist /app/dist
-COPY --from=build /app/node_modules /app/node_modules
+# # Copy built files and production dependencies
+# COPY --from=build /app/dist /app/dist
+# COPY --from=build /app/node_modules /app/node_modules
 
 EXPOSE 8080
 ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
