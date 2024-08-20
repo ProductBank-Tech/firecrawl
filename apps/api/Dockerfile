@@ -44,8 +44,10 @@ RUN apt-get update -qq && \
 # COPY --from=build /app/dist /app/dist
 # COPY --from=build /app/node_modules /app/node_modules
 
+RUN pnpm prune --prod
+
 EXPOSE 8080
 ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
 
 # Add a CMD instruction to specify how to run your application
-CMD ["/bin/sh", "-c", "sleep 3 && pnpm start"]
+CMD ["/bin/sh", "-c", "sleep 3 && node dist/index.js"]

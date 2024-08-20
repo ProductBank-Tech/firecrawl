@@ -2,6 +2,7 @@
 *.csv
 # Exclude node modules (will be installed during build)
 node_modules
+dist
 
 # Exclude any local environment files
 .env
